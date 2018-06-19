@@ -1,9 +1,13 @@
-#include <cv.h>
-#include <highgui.h>
+//#include <cv.h>
+#include "opencv2/core.hpp"
+#include "opencv2/imgproc.hpp"
+#include "opencv2/highgui.hpp"
+//#include <highgui.h>
 #include <stdio.h>
 #define NUM 220
 
-void calculateEnergy(cv::Mat& srcMat,cv::Mat& dstMat,cv::Mat& traceMat)
+using namespace cv;
+void calculateEnergy(Mat& srcMat,Mat& dstMat,Mat& traceMat)
 {
 	srcMat.copyTo(dstMat);   //不用“=”，防止两个矩阵指向的都是同一个矩阵，现在只需要传里面的数值
 
@@ -55,7 +59,7 @@ void calculateEnergy(cv::Mat& srcMat,cv::Mat& dstMat,cv::Mat& traceMat)
 }
 
 // 找出最小能量线
-void getMinEnergyTrace(const cv::Mat& energyMat,const cv::Mat& traceMat,cv::Mat& minTrace)
+void getMinEnergyTrace(const Mat& energyMat,const Mat& traceMat,Mat& minTrace)
 {
 	int row = energyMat.rows - 1;// 取的是energyMat最后一行的数据，所以行标是rows-1
 
@@ -95,7 +99,7 @@ void getMinEnergyTrace(const cv::Mat& energyMat,const cv::Mat& traceMat,cv::Mat&
 }
 
 // 删掉一列
-void delOneCol(cv::Mat& srcMat,cv::Mat& dstMat,cv::Mat& minTrace,cv::Mat& beDeletedLine)
+void delOneCol(Mat& srcMat,Mat& dstMat,Mat& minTrace,Mat& beDeletedLine)
 {
 	
 	for (int i = 0;i < dstMat.rows;i++)
@@ -104,9 +108,9 @@ void delOneCol(cv::Mat& srcMat,cv::Mat& dstMat,cv::Mat& minTrace,cv::Mat& beDele
 		
 		for (int j = 0;j < k;j++)
 		{
-			dstMat.at<cv::Vec3b>(i,j)[0] = srcMat.at<cv::Vec3b>(i,j)[0];
-			dstMat.at<cv::Vec3b>(i,j)[1] = srcMat.at<cv::Vec3b>(i,j)[1];
-			dstMat.at<cv::Vec3b>(i,j)[2] = srcMat.at<cv::Vec3b>(i,j)[2];
+			dstMat.at<Vec3b>(i,j)[0] = srcMat.at<Vec3b>(i,j)[0];
+			dstMat.at<Vec3b>(i,j)[1] = srcMat.at<Vec3b>(i,j)[1];
+			dstMat.at<Vec3b>(i,j)[2] = srcMat.at<Vec3b>(i,j)[2];
 		}
 		for (int j = k;j < dstMat.cols-1;j++)
 		{
@@ -114,137 +118,137 @@ void delOneCol(cv::Mat& srcMat,cv::Mat& dstMat,cv::Mat& minTrace,cv::Mat& beDele
 			{
 				int a = 1;
 			}
-			dstMat.at<cv::Vec3b>(i,j)[0] = srcMat.at<cv::Vec3b>(i,j+1)[0];
-			dstMat.at<cv::Vec3b>(i,j)[1] = srcMat.at<cv::Vec3b>(i,j+1)[1];
-			dstMat.at<cv::Vec3b>(i,j)[2] = srcMat.at<cv::Vec3b>(i,j+1)[2];
+			dstMat.at<Vec3b>(i,j)[0] = srcMat.at<Vec3b>(i,j+1)[0];
+			dstMat.at<Vec3b>(i,j)[1] = srcMat.at<Vec3b>(i,j+1)[1];
+			dstMat.at<Vec3b>(i,j)[2] = srcMat.at<Vec3b>(i,j+1)[2];
 
 		}
 		{
-			beDeletedLine.at<cv::Vec3b>(i,0)[0] = srcMat.at<cv::Vec3b>(i,k)[0];
-			beDeletedLine.at<cv::Vec3b>(i,0)[1] = srcMat.at<cv::Vec3b>(i,k)[1];
-			beDeletedLine.at<cv::Vec3b>(i,0)[2] = srcMat.at<cv::Vec3b>(i,k)[2];
+			beDeletedLine.at<Vec3b>(i,0)[0] = srcMat.at<Vec3b>(i,k)[0];
+			beDeletedLine.at<Vec3b>(i,0)[1] = srcMat.at<Vec3b>(i,k)[1];
+			beDeletedLine.at<Vec3b>(i,0)[2] = srcMat.at<Vec3b>(i,k)[2];
 		}
 	}
 }
 
-void run(cv::Mat& image,cv::Mat& outImage,cv::Mat& outMinTrace,cv::Mat& outDeletedLine)
+void run(Mat& image,Mat& outImage,Mat& outMinTrace,Mat& outDeletedLine)
 {
-	cv::Mat image_gray(image.rows,image.cols,CV_8U,cv::Scalar(0));
-	cv::cvtColor(image,image_gray,CV_BGR2GRAY); //彩色图像转换为灰度图像
+	Mat image_gray(image.rows,image.cols,CV_8U,Scalar(0));
+	cvtColor(image,image_gray,CV_BGR2GRAY); //彩色图像转换为灰度图像
 
-	cv::Mat gradiant_H(image.rows,image.cols,CV_32F,cv::Scalar(0));//水平梯度矩阵
-	cv::Mat gradiant_V(image.rows,image.cols,CV_32F,cv::Scalar(0));//垂直梯度矩阵
+	Mat gradiant_H(image.rows,image.cols,CV_32F,Scalar(0));//水平梯度矩阵
+	Mat gradiant_V(image.rows,image.cols,CV_32F,Scalar(0));//垂直梯度矩阵
 
-	cv::Mat kernel_H = (cv::Mat_<float>(3,3) << 0, 0, 0, 0, 1, -1, 0, 0, 0); //求水平梯度所使用的卷积核（赋初始值）
-	cv::Mat kernel_V = (cv::Mat_<float>(3,3) << 0, 0, 0, 0, 1, 0, 0, -1, 0); //求垂直梯度所使用的卷积核（赋初始值）
+	Mat kernel_H = (Mat_<float>(3,3) << 0, 0, 0, 0, 1, -1, 0, 0, 0); //求水平梯度所使用的卷积核（赋初始值）
+	Mat kernel_V = (Mat_<float>(3,3) << 0, 0, 0, 0, 1, 0, 0, -1, 0); //求垂直梯度所使用的卷积核（赋初始值）
 
-	cv::filter2D(image_gray,gradiant_H,gradiant_H.depth(),kernel_H);
-	cv::filter2D(image_gray,gradiant_V,gradiant_V.depth(),kernel_V);
+	filter2D(image_gray,gradiant_H,gradiant_H.depth(),kernel_H);
+	filter2D(image_gray,gradiant_V,gradiant_V.depth(),kernel_V);
 
-	cv::Mat gradMag_mat(image.rows,image.rows,CV_32F,cv::Scalar(0));
-	cv::add(cv::abs(gradiant_H),cv::abs(gradiant_V),gradMag_mat);//水平与垂直滤波结果的绝对值相加，可以得到近似梯度大小
+	Mat gradMag_mat(image.rows,image.rows,CV_32F,Scalar(0));
+	add(abs(gradiant_H),abs(gradiant_V),gradMag_mat);//水平与垂直滤波结果的绝对值相加，可以得到近似梯度大小
 
 	////如果要显示梯度大小这个图，因为gradMag_mat深度是CV_32F，所以需要先转换为CV_8U
-	//cv::Mat testMat;
+	//Mat testMat;
 	//gradMag_mat.convertTo(testMat,CV_8U,1,0);
-	//cv::imshow("Image Show Window2",testMat);
+	//imshow("Image Show Window2",testMat);
 
 	//计算能量线
-	cv::Mat energyMat(image.rows,image.cols,CV_32F,cv::Scalar(0));//累计能量矩阵
-	cv::Mat traceMat(image.rows,image.cols,CV_32F,cv::Scalar(0));//能量最小轨迹矩阵
+	Mat energyMat(image.rows,image.cols,CV_32F,Scalar(0));//累计能量矩阵
+	Mat traceMat(image.rows,image.cols,CV_32F,Scalar(0));//能量最小轨迹矩阵
 	calculateEnergy(gradMag_mat,energyMat,traceMat); 
 
 	//找出最小能量线
-	cv::Mat minTrace(image.rows,1,CV_32F,cv::Scalar(0));//能量最小轨迹矩阵中的最小的一条的轨迹
+	Mat minTrace(image.rows,1,CV_32F,Scalar(0));//能量最小轨迹矩阵中的最小的一条的轨迹
 	getMinEnergyTrace(energyMat,traceMat,minTrace);
 
 	//显示最小能量线
-	cv::Mat tmpImage(image.rows,image.cols,image.type());
+	Mat tmpImage(image.rows,image.cols,image.type());
 	image.copyTo(tmpImage);
 	for (int i = 0;i < image.rows;i++)
 	{
 		int k = minTrace.at<float>(i,0);
-		tmpImage.at<cv::Vec3b>(i,k)[0] = 0;
-		tmpImage.at<cv::Vec3b>(i,k)[1] = 0;
-		tmpImage.at<cv::Vec3b>(i,k)[2] = 255;
+		tmpImage.at<Vec3b>(i,k)[0] = 0;
+		tmpImage.at<Vec3b>(i,k)[1] = 0;
+		tmpImage.at<Vec3b>(i,k)[2] = 255;
 	}
-	cv::imshow("Image Show Window (A)",tmpImage);
+	imshow("Image Show Window (A)",tmpImage);
 
 	//删除一列
-	cv::Mat image2(image.rows,image.cols-1,image.type());
-	cv::Mat beDeletedLine(image.rows,1,CV_8UC3);//记录被删掉的那一列的值
+	Mat image2(image.rows,image.cols-1,image.type());
+	Mat beDeletedLine(image.rows,1,CV_8UC3);//记录被删掉的那一列的值
 	delOneCol(image,image2,minTrace,beDeletedLine);
-	cv::imshow("Image Show Window",image2);
+	imshow("Image Show Window",image2);
 
 	image2.copyTo(outImage);
 	minTrace.copyTo(outMinTrace);
 	beDeletedLine.copyTo(outDeletedLine);
 }
 
-void recoverOneLine(cv::Mat& inImage,cv::Mat&inTrace,cv::Mat& inDeletedLine,cv::Mat& outImage)
+void recoverOneLine(Mat& inImage,Mat&inTrace,Mat& inDeletedLine,Mat& outImage)
 {
 	
-	cv::Mat recorvedImage(inImage.rows,inImage.cols+1,CV_8UC3);
+	Mat recorvedImage(inImage.rows,inImage.cols+1,CV_8UC3);
 	for (int i = 0; i < inImage.rows; i++)
 	{
 		int k = inTrace.at<float>(i);
 		for (int j = 0; j < k; j++)
 		{
-			recorvedImage.at<cv::Vec3b>(i,j)[0] = inImage.at<cv::Vec3b>(i,j)[0];
-			recorvedImage.at<cv::Vec3b>(i,j)[1] = inImage.at<cv::Vec3b>(i,j)[1];
-			recorvedImage.at<cv::Vec3b>(i,j)[2] = inImage.at<cv::Vec3b>(i,j)[2];
+			recorvedImage.at<Vec3b>(i,j)[0] = inImage.at<Vec3b>(i,j)[0];
+			recorvedImage.at<Vec3b>(i,j)[1] = inImage.at<Vec3b>(i,j)[1];
+			recorvedImage.at<Vec3b>(i,j)[2] = inImage.at<Vec3b>(i,j)[2];
 		}
-		recorvedImage.at<cv::Vec3b>(i,k)[0] = inDeletedLine.at<cv::Vec3b>(i,0)[0];
-		recorvedImage.at<cv::Vec3b>(i,k)[1] = inDeletedLine.at<cv::Vec3b>(i,0)[1];
-		recorvedImage.at<cv::Vec3b>(i,k)[2] = inDeletedLine.at<cv::Vec3b>(i,0)[2];
+		recorvedImage.at<Vec3b>(i,k)[0] = inDeletedLine.at<Vec3b>(i,0)[0];
+		recorvedImage.at<Vec3b>(i,k)[1] = inDeletedLine.at<Vec3b>(i,0)[1];
+		recorvedImage.at<Vec3b>(i,k)[2] = inDeletedLine.at<Vec3b>(i,0)[2];
 
 		for (int j = k + 1;j < inImage.cols + 1; j++)
 		{
-			recorvedImage.at<cv::Vec3b>(i,j)[0] = inImage.at<cv::Vec3b>(i,j-1)[0];
-			recorvedImage.at<cv::Vec3b>(i,j)[1] = inImage.at<cv::Vec3b>(i,j-1)[1];
-			recorvedImage.at<cv::Vec3b>(i,j)[2] = inImage.at<cv::Vec3b>(i,j-1)[2];
+			recorvedImage.at<Vec3b>(i,j)[0] = inImage.at<Vec3b>(i,j-1)[0];
+			recorvedImage.at<Vec3b>(i,j)[1] = inImage.at<Vec3b>(i,j-1)[1];
+			recorvedImage.at<Vec3b>(i,j)[2] = inImage.at<Vec3b>(i,j-1)[2];
 		}
 	}
 
 	//显示恢复的轨迹
-	cv::Mat tmpImage(recorvedImage.rows,recorvedImage.cols,recorvedImage.type());
+	Mat tmpImage(recorvedImage.rows,recorvedImage.cols,recorvedImage.type());
 	recorvedImage.copyTo(tmpImage);
 	for (int i = 0;i < tmpImage.rows;i++)
 	{
 		int k = inTrace.at<float>(i,0);
-		tmpImage.at<cv::Vec3b>(i,k)[0] = 0;
-		tmpImage.at<cv::Vec3b>(i,k)[1] = 255;
-		tmpImage.at<cv::Vec3b>(i,k)[2] = 0;
+		tmpImage.at<Vec3b>(i,k)[0] = 0;
+		tmpImage.at<Vec3b>(i,k)[1] = 255;
+		tmpImage.at<Vec3b>(i,k)[2] = 0;
 	}
-	cv::imshow("Image Show Window (B)",tmpImage);
+	imshow("Image Show Window (B)",tmpImage);
 
 	recorvedImage.copyTo(outImage);
 }
 
 int main(int argc,char* argv)
 {
-	cv::Mat image = cv::imread("1.jpg");
-	cv::namedWindow("Original Image");
-	cv::imshow("Original Image",image);
+	Mat image = imread("1.jpg");
+	namedWindow("Original Image");
+	imshow("Original Image",image);
 	
-	cv::Mat tmpMat;
+	Mat tmpMat;
 	image.copyTo(tmpMat);
 
-	cv::Mat traces[NUM];
-	cv::Mat deletedLines[NUM];
+	Mat traces[NUM];
+	Mat deletedLines[NUM];
 
-	cv::Mat outImage;
+	Mat outImage;
 
-	cv::waitKey(2000);
+	waitKey(2000);
 
 	for (int i = 0;i < NUM;i++)
 	{
 		run(tmpMat,outImage,traces[i],deletedLines[i]);
 		tmpMat = outImage;
-		cv::waitKey(50);
+		waitKey(50);
 	}
 
-	cv::Mat tmpMat2;
+	Mat tmpMat2;
 	outImage.copyTo(tmpMat2);
 
 	for (int i = 0; i < NUM; i++)
@@ -252,9 +256,9 @@ int main(int argc,char* argv)
 		
 		recoverOneLine(tmpMat2,traces[NUM-i-1],deletedLines[NUM-i-1],outImage);
 		tmpMat2 = outImage;
-		cv::waitKey(50);
+		waitKey(50);
 	}
-	cv::waitKey(115000);
+	waitKey(115000);
 	return 0;
 
 }
