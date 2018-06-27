@@ -25,9 +25,14 @@ def main():
         for j in range(picin.shape[1]-1):#loss的最后一行最后一列为0
             loss[i][j]=diff(picin,i,j)
 
-    for i in range(picin.shape[0]-1):   #修正最后一列
-        loss[i][picin.shape[1]-1]=loss[i][picin.shape[1]-2]
+    for i in range(picin.shape[0]):   #修正最后一列
+        loss[i][picin.shape[1]-1]=10000
+        loss[i][0]=10000
+    for i in range(picin.shape[1]):   #修正最后一列
+        loss[picin.shape[0]-1][i]=10000
+        loss[0][i]=10000
 
+    picin=np.concatenate(picin,np.zeros([100,picin.shape[1],3])
 
     for step in range(picin.shape[0]-10):
         summ=np.ones(picin.shape[:2])*10000               #重新初始化sum

@@ -8,7 +8,7 @@
 
 using namespace cv;
 using namespace std;
-bool rotateFlag=true;
+bool rotateFlag=false;
 
 int** newmat(int rows, int cols)
 {
@@ -52,7 +52,7 @@ void rotate(Mat& picin,double angle)
 
 int main()
 {
-	Mat picin = imread("6.jpg");
+	Mat picin = imread("3.jpg");
 	imshow("1.jpg",picin);
 	waitKey();
     int rows=picin.rows,cols=picin.cols;
@@ -115,6 +115,7 @@ int main()
                 minsum=summ[rows-1][j];
                 oldm=j;
             }
+        printf("min:%d\n",minsum);
         int minpos=oldm;
 
 //显示图片
@@ -125,7 +126,7 @@ int main()
             minpos=last[i][minpos];
         }
         
-        imshow("1.jpg",picin); waitKey(1);
+        imshow("1.jpg",picin); waitKey(0);
 
         minpos=oldm;
         for (int i=rows-1; i>-1;i--)             //从最底下一直到最上面
@@ -140,7 +141,6 @@ int main()
                 picin.at<Vec3b>(i,cols-1-step)[r]=0;//最左边抹黑
             minpos=last[i][minpos];                         //更新minpos
         }
-
         //更新loss
         minpos=oldm;
         for (int i=rows-2; i>0; i--)             //i不能从头到尾了因为计算loss i最后一行没有

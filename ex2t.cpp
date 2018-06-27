@@ -52,7 +52,7 @@ void rotate(Mat& picin,double angle)
 
 int main()
 {
-	Mat picin = imread("6.jpg");
+	Mat picin = imread("1.jpg");
 	imshow("1.jpg",picin);
 	waitKey();
     int rows=picin.rows,cols=picin.cols;
@@ -73,18 +73,6 @@ int main()
         for (int j = 1;j < cols-1;j++)
             loss[i][j]=diffcalc(picin,i,j);
 //修正最后一行
-/*
-    for (int i = 0;i < rows;i++)
-    {
-        loss[i][cols-1]=loss[i][cols-2];
-        loss[i][0]=loss[i][1];
-    }
-    for (int j = 0;j < cols;j++)
-    {
-        loss[rows-1][j]=loss[rows-2][j];
-        loss[0][j]=loss[1][j];
-    }
-*/
     for (int i = 0;i < rows;i++)
     {
         loss[i][cols-1]=10000;
@@ -95,45 +83,29 @@ int main()
         loss[rows-1][j]=10000;
         loss[0][j]=10000;
     }
+
     int** summ=newmat(rows,cols);
     int** last=newmat(rows,cols);
-    int** black=newmat(rows,cols);
-	for (int i = 0;i < rows;i++)
-        memset(black[i],0,cols*sizeof(int));
-    int* route=new int[rows];
     for (int step = 0;step < cols/3;step++)
     {
         //计算sum 动态规划
-        for (int j = 1;j < cols-step-1;j++)
+        for (int j = 0;j < cols-step;j++)
             summ[0][j]=loss[0][j];
-        for (int i = 1;i < rows-1;i++)
-        {
-            int writepoi=1;
-            int findpoi=1;
-            for (int j = 1;j < cols-step-1;j++)
+        for (int i = 0;i < rows-1;i++)
+            for (int j = 0;j < cols-step;j++)
             {
-                while(black[i+1][writepoi]) writepoi++;
-                while(black[i][findpoi]) findpoi++;
-
-                summ[i+1][writepoi]=summ[i][findpoi];
-                last[i+1][writepoi]=findpoi;
-                int lookpoi=findpoi;
-
-                for (int r = 0; r < ((j==1 || j==cols-step-2) ? 1 : 2); ++r)//边界没有loss
+                summ[i+1][j]=summ[i][max(j-1,0)];
+                last[i+1][j]=max(j-1,0);
+                for (int r = max(j-1,0)+1; r < min(j+2,cols-1-step); r++)
                 {
-                    lookpoi++; while(black[i][lookpoi]) lookpoi++;
-
-                    if(summ[i][lookpoi]<summ[i+1][writepoi]) //取三个的最小值
+                    if(summ[i][r]<summ[i+1][j]) //取三个的最小值
                     {
-                        summ[i+1][writepoi]=summ[i][lookpoi];
-                        last[i+1][writepoi]=lookpoi;                //存放上面一排的位置
+                        summ[i+1][j]=summ[i][r];
+                        last[i+1][j]=r;                //存放上面一排的位置
                     }
                 }
-                summ[i+1][writepoi]+=loss[i+1][writepoi];
-                writepoi++;
-                if(j!=1)findpoi++;
+                summ[i+1][j]+=loss[i+1][j];
             }
-        }
                     
                     
         int minsum=100000, oldm=0;
@@ -143,59 +115,38 @@ int main()
                 minsum=summ[rows-1][j];
                 oldm=j;
             }
-        printf("min:%d\n",minsum);
+        printf("min:%d %d\n",minsum, oldm);
         int minpos=oldm;
 
 //显示图片
+/*
         for (int i=rows-1;i>-1;i--)
         {
             for (int r=0;r<3;++r)
                 picin.at<Vec3b>(i,minpos)[r]=0;
-            black[i][minpos]=1;
-            summ[i][minpos]=1000000;
-            route[i]=minpos;
             minpos=last[i][minpos];
         }
         
-//        imshow("1.jpg",picin); waitKey();
-
+        imshow("1.jpg",picin); waitKey(0);
+        minpos=oldm;
+*/
+        for (int i=rows-1; i>-1;i--)             //从最底下一直到最上面
+        {
+            for (int j=minpos; j<cols-1-step;j++)   //一行的像素左移
+            {
+                for (int r=0;r<3;++r)
+                    picin.at<Vec3b>(i,j)[r]=picin.at<Vec3b>(i,j+1)[r];
+                loss[i][j]=loss[i][j+1];                    //左移
+            }
+            for (int r=0;r<3;++r)
+                picin.at<Vec3b>(i,cols-1-step)[r]=0;//最左边抹黑
+            minpos=last[i][minpos];                         //更新minpos
+        }
         //更新loss
-        //左侧线:把更改部分填补成右侧
         minpos=oldm;
-        for (int i=rows-2; i>0; i--)             //i不能从头到尾了因为计算loss i最后一行没有
+        for (int i=rows-1; i>0; i--)             //i不能从头到尾了因为计算loss i最后一行没有
         {
-            for (int r=0;r<3;++r)
-                picin.at<Vec3b>(i,minpos)[r]=picin.at<Vec3b>(i,minpos+1)[r];
-            minpos=last[i][minpos];                         //更新minpos
-        }
-        //计算左侧线loss
-        minpos=oldm;
-        for (int i=rows-2; i>0; i--)             //i不能从头到尾了因为计算loss i最后一行没有
-        {
-            loss[i-1][minpos]=diffcalc(picin,i-1,minpos);
-            minpos=last[i][minpos];                         //更新minpos
-        }
-        //右侧线::把更改部分填补成左侧
-        minpos=oldm;
-        for (int i=rows-2; i>0; i--)             //i不能从头到尾了因为计算loss i最后一行没有
-        {
-            for (int r=0;r<3;++r)
-                picin.at<Vec3b>(i,minpos)[r]=picin.at<Vec3b>(i,minpos-1)[r];
-            minpos=last[i][minpos];                         //更新minpos
-        }
-        //计算右侧线loss
-        minpos=oldm;
-        for (int i=rows-2; i>0; i--)             //i不能从头到尾了因为计算loss i最后一行没有
-        {
-            loss[i+1][minpos]=diffcalc(picin,i+1,minpos);
-            minpos=last[i][minpos];                         //更新minpos
-        }
-        //最后再画成黑的(便于显示)
-        minpos=oldm;
-        for (int i=rows-2; i>0; i--)             //i不能从头到尾了因为计算loss i最后一行没有
-        {
-            for (int r=0;r<3;++r)
-                picin.at<Vec3b>(i,minpos)[r]=0;
+            loss[i][minpos]=diffcalc(picin,i,minpos);
             minpos=last[i][minpos];                         //更新minpos
         }
         printf("%d\n",step);
@@ -208,22 +159,6 @@ int main()
         imshow("1.jpg",picin);
         waitKey();
 */
-    }
-    for (int i=0; i<rows;i++)             //从最底下一直到最上面
-    {
-        int jpoi=0;
-        for (int j=0; j<cols-cols/3;j++)   //一行的像素左移
-        {
-            if(black[i][j]==0)
-            {
-                for (int r=0;r<3;++r)
-                    picin.at<Vec3b>(i,jpoi)[r]=picin.at<Vec3b>(i,j)[r];
-                jpoi++;
-            }
-        }
-        for (int j=cols-cols/3; j<cols;j++)
-            for (int r=0;r<3;++r)
-                picin.at<Vec3b>(i,j)[r]=0;//最左边抹黑
     }
     if(rotateFlag) rotate(picin,-90);
     imshow("1.jpg",picin);
