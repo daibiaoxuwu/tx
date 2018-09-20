@@ -125,7 +125,7 @@ def main():
     cv2.imshow('pic',picin)
 
     printf("added my feature");
-    printf("this is a bug");
+    #printf("this is a bug");
 #release notes
     cv2.waitKey()
 
