@@ -126,6 +126,7 @@ def main():
 
     printf("added my feature");
     printf("this is a bug");
+#release notes
     cv2.waitKey()
 
 main()
