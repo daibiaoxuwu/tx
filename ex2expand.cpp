@@ -74,13 +74,13 @@ int main()
 
 
 
-//²îÖµ
+//ï¿½ï¿½Öµ
     int** loss=newmat(rows,cols + csteps);
 
 	for (int i = 1;i < rows-1;i++)
         for (int j = 1;j < cols-1;j++)
             loss[i][j]=diffcalc(picin,i,j);
-//ÐÞÕý×îºóÒ»ÐÐ
+//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½
     for (int i = 0;i < rows;i++)
     {
         loss[i][cols-1]=10000;
@@ -96,7 +96,7 @@ int main()
     int** last=newmat(rows,cols+csteps);
     for (int step = 0;step < csteps;step++)
     {
-        //¼ÆËãsum ¶¯Ì¬¹æ»®
+        //ï¿½ï¿½ï¿½ï¿½sum ï¿½ï¿½Ì¬ï¿½æ»®
         for (int j = 0;j < cols+step;j++)
             summ[0][j]=0;
             //summ[0][j]=loss[0][j];
@@ -107,10 +107,10 @@ int main()
                 last[i+1][j]=max(j-1,0);
                 for (int r = max(j-1,0)+1; r < min(j+2,cols-1+step); r++)
                 {
-                    if(summ[i][r]<summ[i+1][j]) //È¡Èý¸öµÄ×îÐ¡Öµ
+                    if(summ[i][r]<summ[i+1][j]) //È¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð¡Öµ
                     {
                         summ[i+1][j]=summ[i][r];
-                        last[i+1][j]=r;                //´æ·ÅÉÏÃæÒ»ÅÅµÄÎ»ÖÃ
+                        last[i+1][j]=r;                //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò»ï¿½Åµï¿½Î»ï¿½ï¿½
                     }
                 }
                 summ[i+1][j]+=loss[i+1][j];
@@ -118,7 +118,7 @@ int main()
                     
                     
         int minsum=10000000, oldm=0;
-        //¼ÆËã·½²î
+        //ï¿½ï¿½ï¿½ã·½ï¿½ï¿½
         
             
         int* lineloss=new int[cols+step];
@@ -135,9 +135,9 @@ int main()
         double accum  = 0.0;  
         for (int j = 1; j < cols-1+step; j++)
             accum  += (lineloss[j]-mean)* (lineloss[j]-mean);
-        double stdev = sqrt(accum/(cols+step-3))/mean/mean; //·½²î  
+        double stdev = sqrt(accum/(cols+step-3))/mean/mean; //ï¿½ï¿½ï¿½ï¿½  
     
-        for (int j = 1; j < cols-1+step; j++)        //ÒòÎªµÚÒ»ÁÐºÍ×îºóÒ»ÁÐÃ»ÓÐ,·¶Î§ËõÐ¡,ËõÐ¡µôºÚ±ß
+        for (int j = 1; j < cols-1+step; j++)        //ï¿½ï¿½Îªï¿½ï¿½Ò»ï¿½Ðºï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½Ã»ï¿½ï¿½,ï¿½ï¿½Î§ï¿½ï¿½Ð¡,ï¿½ï¿½Ð¡ï¿½ï¿½Ú±ï¿½
             if(lineloss[j]<minsum)
             {
                 minsum=lineloss[j];
@@ -147,7 +147,7 @@ int main()
         int minpos=oldm;
         printf("stdev: %lf mean: %lf min:%d minpos %d\n",stdev,mean, minsum, minpos);
 
-//ÏÔÊ¾Í¼Æ¬
+//ï¿½ï¿½Ê¾Í¼Æ¬
 /*
         Mat dst;
         picin.copyTo(dst);
@@ -155,7 +155,7 @@ int main()
         {
             for (int r=0;r<3;++r)
                 dst.at<Vec3b>(i,minpos)[r]=0;
-            minpos=last[i][minpos];                         //¸üÐÂminpos
+            minpos=last[i][minpos];                         //ï¿½ï¿½ï¿½ï¿½minpos
         }
         imshow("1.jpg",dst); waitKey(1);//pause
         minpos=oldm;
@@ -205,25 +205,25 @@ int main()
         minpos=oldm;
 */
 
-        for (int i=rows-1; i>-1;i--)             //´Ó×îµ×ÏÂÒ»Ö±µ½×îÉÏÃæ
+        for (int i=rows-1; i>-1;i--)             //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò»Ö±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
         {
-            for (int j=cols-1+step; j>minpos; j--)   //Ò»ÐÐµÄÏñËØ×óÒÆ
+            for (int j=cols-1+step; j>minpos; j--)   //Ò»ï¿½Ðµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
             {
                 for (int r=0;r<3;++r)
                     picin.at<Vec3b>(i,j)[r]=picin.at<Vec3b>(i,j-1)[r];
-                loss[i][j]=loss[i][j-1];                    //×óÒÆ
+                loss[i][j]=loss[i][j-1];                    //ï¿½ï¿½ï¿½ï¿½
             }
-            minpos=last[i][minpos];                         //¸üÐÂminpos
+            minpos=last[i][minpos];                         //ï¿½ï¿½ï¿½ï¿½minpos
         }
-        //¸üÐÂloss
+        //ï¿½ï¿½ï¿½ï¿½loss
         minpos=oldm;
-        for (int i=rows-1; i>0; i--)             //i²»ÄÜ´ÓÍ·µ½Î²ÁËÒòÎª¼ÆËãloss i×îºóÒ»ÐÐÃ»ÓÐ
+        for (int i=rows-1; i>0; i--)             //iï¿½ï¿½ï¿½Ü´ï¿½Í·ï¿½ï¿½Î²ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½loss iï¿½ï¿½ï¿½Ò»ï¿½ï¿½Ã»ï¿½ï¿½
         {
             int maxloss=0;
             for(int j=1;j<cols+step-1;++j) maxloss=max(maxloss,loss[i][j]);
             /*
-            loss[i][minpos]=0;              //²»ÄÜÖØ¸´À©Õ¹
-            loss[i][minpos+1]=10000;              //²»ÄÜÖØ¸´À©Õ¹
+            loss[i][minpos]=0;              //ï¿½ï¿½ï¿½ï¿½ï¿½Ø¸ï¿½ï¿½ï¿½Õ¹
+            loss[i][minpos+1]=10000;              //ï¿½ï¿½ï¿½ï¿½ï¿½Ø¸ï¿½ï¿½ï¿½Õ¹
             for(int r=0; r<3; ++r)
                 loss[i][minpos-1]+= abs(picin.at<Vec3b>(i,minpos+2)[r] - picin.at<Vec3b>(i,minpos)[r]);
                 */
@@ -232,7 +232,7 @@ int main()
             loss[i][minpos]+=2;
             loss[i][minpos+1]+=2;
 
-            minpos=last[i][minpos];                         //¸üÐÂminpos
+            minpos=last[i][minpos];                         //ï¿½ï¿½ï¿½ï¿½minpos
         }
         printf("%d\n",step);
         fflush(stdout);
@@ -249,6 +249,8 @@ int main()
     imshow("1.jpg",picin);
     imshow("oldjpg",picread);
     waitKey();
+    printf("doing new feature1 with way1");
+    printf("here is a bug");
 	return 0;
 
 }
